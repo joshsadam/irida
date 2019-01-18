@@ -1,26 +1,26 @@
-import React, { Component } from "react";
+import React from "react";
 import { render } from "react-dom";
-import EmptyCart from "./EmptyCart";
-import { getProjectsInCart } from "../../apis/cart/cart";
+import { Provider } from "react-redux";
+import { getStore } from "../../redux/getStore";
+import { cartPageReducer } from "./reducer";
+import {
+  sampleDetailsReducer,
+  getDetailsForSample
+} from "../../components/SampleDetails";
+import { actions } from "../../redux/reducers/app";
+import { getCartProjectIds, empty } from "./sagas";
+import CartPage from "./components/CartPage";
 
-class Cart extends Component {
-  state = {};
+const store = getStore(
+  { cartPageReducer, sampleDetailsReducer },
+  { getCartProjectIds, empty, getDetailsForSample }
+);
 
-  componentDidMount() {
-    getProjectsInCart().then(data => {
-      this.setState({ projects: data });
-    });
-  }
+render(
+  <Provider store={store}>
+    <CartPage />
+  </Provider>,
+  document.querySelector("#root")
+);
 
-  render() {
-    const { projects } = this.state;
-    if (typeof projects === "undefined") {
-      return <div>Loading...</div>;
-    } else if (projects.length === 0) {
-      return <EmptyCart />;
-    }
-    return null;
-  }
-}
-
-render(<Cart />, document.querySelector("#root"));
+store.dispatch(actions.initialize({}));
