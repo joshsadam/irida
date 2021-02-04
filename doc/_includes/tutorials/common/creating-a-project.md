@@ -1,6 +1,10 @@
-You can create a new project by clicking on the "Projects" menu at the top of the dashboard and selecting "Create New Project":
+You can create a new project by clicking on the "Projects" menu at the top of the dashboard and selecting "Your Projects".
 
-![Create new project dashboard location.]({{ site.baseurl }}/images/tutorials/common/projects/create-new-project.png)
+![your-projects]({{ site.baseurl }}/images/tutorials/common/projects/your-projects.png)
+
+From the projects listing page click the "Create New Project" button:
+
+![create-new-project]({{ site.baseurl }}/images/tutorials/common/projects/create-new-project-btn.png)
 
 When you create a new project, you'll need to provide a project name, and can optionally provide a project organism, a free-form project description, and a link to another web site that has more inforamtion about the project:
 

@@ -4,7 +4,7 @@
 	<groupId>ca.corefacility.bioinformatics</groupId>
 	<artifactId>irida</artifactId>
 	<packaging>war</packaging>
-	<version>20.09-SNAPSHOT</version>
+	<version>21.05-SNAPSHOT</version>
 	<name>irida</name>
 	<url>http://www.irida.ca</url>
 
@@ -256,11 +256,6 @@
 			<groupId>commons-net</groupId>
 			<artifactId>commons-net</artifactId>
 			<version>${commons.net.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>javax.interceptor</groupId>
-			<artifactId>javax.interceptor-api</artifactId>
-			<version>${javax.interceptor-api.version}</version>
 		</dependency>
 
 		<!-- RDF Database -->
@@ -802,8 +797,8 @@
 					</execution>
 				</executions>
 				<configuration>
-					<outputDirectory>doc/_site/developer/apidocs/</outputDirectory>
-					<reportOutputDirectory>doc/_site/developer/apidocs/</reportOutputDirectory>
+					<outputDirectory>doc/developer/apidocs/</outputDirectory>
+					<reportOutputDirectory>doc/developer/apidocs/</reportOutputDirectory>
 					<quiet>true</quiet>
                     <doclint>all</doclint>
 				</configuration>
@@ -1008,22 +1003,6 @@
 				<artifactId>exec-maven-plugin</artifactId>
 				<version>${maven.exec.plugin.version}</version>
 				<executions>
-					<execution>
-						<id>exec-jekyll-build</id>
-						<phase>site</phase>
-						<configuration>
-							<executable>jekyll</executable>
-							<workingDirectory>doc/</workingDirectory>
-							<arguments>
-								<argument>build</argument>
-								<argument>--config</argument>
-								<argument>_build-config.yml</argument>
-							</arguments>
-						</configuration>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-					</execution>
 					<!-- Generate tools-list.yml file to include in package -->
 					<execution>
 						<id>exec-tools-list-export</id>
@@ -1126,7 +1105,7 @@
 		<aspectj.version>1.8.2</aspectj.version>
 		<hibernate.validator.version>5.4.3.Final</hibernate.validator.version>
 		<el-ri.version>1.0</el-ri.version>
-		<com.github.jmchilton.blend4j.version>0.2.0</com.github.jmchilton.blend4j.version>
+		<com.github.jmchilton.blend4j.version>0.2.1-2201df9</com.github.jmchilton.blend4j.version>
 		<apache.jena.version>3.12.0</apache.jena.version>
 		<commons-csv.version>1.4</commons-csv.version>
 		<xml.apis.version>1.4.01</xml.apis.version>
@@ -1151,7 +1130,6 @@
 		<selenium-driver.version>3.141.59</selenium-driver.version>
 		<selenium-chrome-driver.version>3.141.59</selenium-chrome-driver.version>
 		<attoparser.version>2.0.4.RELEASE</attoparser.version>
-		<javax.interceptor-api.version>3.1</javax.interceptor-api.version>
 		<powermock.version>1.6.2</powermock.version>
 		<mockftpserver.version>2.6</mockftpserver.version>
 		<jsonpath.version>2.4.0</jsonpath.version>
@@ -1178,7 +1156,7 @@
 		<maven.build.helper.plugin.version>3.0.0</maven.build.helper.plugin.version>
 		<maven.site.plugin.version>3.7.1</maven.site.plugin.version>
 		<errorprone.version>2.5</errorprone.version>
-		<frontend-maven-plugin.version>1.7.6</frontend-maven-plugin.version>
+		<frontend-maven-plugin.version>1.11.0</frontend-maven-plugin.version>
 		<node.version>v12.18.0</node.version>
 		<yarn.version>v1.21.1</yarn.version>
 		<com.google.code.gson.version>2.8.6</com.google.code.gson.version>

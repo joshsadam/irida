@@ -83,7 +83,7 @@ public class ProjectSamplesController {
 	private final SampleService sampleService;
 	private final ProjectControllerUtils projectControllerUtils;
 	private final SequencingObjectService sequencingObjectService;
-	private MessageSource messageSource;
+	private final MessageSource messageSource;
 
 	@Autowired
 	public ProjectSamplesController(ProjectService projectService, SampleService sampleService, SequencingObjectService sequencingObjectService, ProjectControllerUtils projectControllerUtils,
@@ -107,7 +107,7 @@ public class ProjectSamplesController {
 	 *
 	 * @return Name of the project samples list view
 	 */
-	@RequestMapping(value = { "/projects/{projectId}", "/projects/{projectId}/samples" })
+	@RequestMapping(value = { "/projects/{projectId}", "/projects/{projectId}/samples", "/projects/{projectId}/add-sample*/**", "/projects/{projectId}/samples/add-sample*/**" })
 	public String getProjectSamplesPage(final Model model, final Principal principal, @PathVariable long projectId) {
 		Project project = projectService.read(projectId);
 		model.addAttribute("project", project);
@@ -129,55 +129,6 @@ public class ProjectSamplesController {
 	}
 
 	/**
-	 * Get the create new sample page.
-	 *
-	 * @param projectId
-	 * 		Id for the {@link Project} the sample will belong to.
-	 * @param model
-	 * 		{@link Model}
-	 * @param sample
-	 * 		{@link Sample} required if redirected back to the create page.
-	 *
-	 * @return Name of the add sample page.
-	 */
-	@RequestMapping("/projects/{projectId}/samples/new")
-	public String getCreateNewSamplePage(@PathVariable Long projectId, Model model, Sample sample) {
-		Project project = projectService.read(projectId);
-		model.addAttribute("project", project);
-		model.addAttribute("sample", sample);
-		return "projects/project_add_sample";
-	}
-
-	/**
-	 * Create a new {@link Sample} in a {@link Project}
-	 *
-	 * @param projectId
-	 * 		{@link Long} identifier for the current {@link Project}
-	 * @param sample
-	 * 		{@link Sample} to create in the {@link Project}
-	 *
-	 * @return Redirect to the newly created {@link Sample} page
-	 */
-	@RequestMapping(value = "/projects/{projectId}/samples/new", method = RequestMethod.POST)
-	public String createNewSample(@PathVariable Long projectId, Sample sample) {
-		Project project = projectService.read(projectId);
-
-		// Need a check to see if the Organism name was actually set.
-		if(sample.getOrganism().equals("")) {
-			sample.setOrganism(null);
-		}
-
-		try {
-			Join<Project, Sample> join = projectService.addSampleToProject(project, sample, true);
-			return "redirect:/projects/" + projectId + "/samples/" + join.getObject().getId();
-		} catch (EntityExistsException e) {
-			// This will be thrown if a sample already exists in the project with this name.
-			// This should have already been addressed on the client
-			return "redirect:/projects/" + projectId + "/samples/new";
-		}
-	}
-
-	/**
 	 * Creates the modal to remove samples from a project.
 	 *
 	 * @param ids       {@link List} of sample names to remove.
@@ -185,7 +136,7 @@ public class ProjectSamplesController {
 	 * @param model     UI model
 	 * @return path to remove modal template
 	 */
-	@RequestMapping(value = "/projects/{projectId}/templates/remove-modal", produces = MediaType.TEXT_HTML_VALUE)
+	@PostMapping(value = "/projects/{projectId}/templates/remove-modal", produces = MediaType.TEXT_HTML_VALUE)
 	public String getRemoveSamplesFromProjectModal(@RequestParam(name = "sampleIds[]") List<Long> ids, @PathVariable Long projectId, Model model) {
 		List<Sample> samplesThatAreInMultiple = new ArrayList<>();
 		List<Sample> samplesThatAreInOne = new ArrayList<>();
@@ -215,7 +166,7 @@ public class ProjectSamplesController {
 	 * @param model     UI Model
 	 * @return Path to merge modal template
 	 */
-	@RequestMapping(value = "/projects/{projectId}/templates/merge-modal", produces = MediaType.TEXT_HTML_VALUE)
+	@PostMapping(value = "/projects/{projectId}/templates/merge-modal", produces = MediaType.TEXT_HTML_VALUE)
 	public String getMergeSamplesInProjectModal(@PathVariable Long projectId, @RequestParam(name = "sampleIds[]") List<Long> ids, Model model) {
 		Project project = projectService.read(projectId);
 		List<Sample> samples = new ArrayList<>();
@@ -247,7 +198,7 @@ public class ProjectSamplesController {
 	 * @param move      Whether or not to display share or move wording.
 	 * @return Path to share or move modal template.
 	 */
-	@RequestMapping(value = "/projects/{projectId}/templates/copy-move-modal", produces = MediaType.TEXT_HTML_VALUE)
+	@PostMapping(value = "/projects/{projectId}/templates/copy-move-modal", produces = MediaType.TEXT_HTML_VALUE)
 	public String getShareSamplesModal(@RequestParam(name = "sampleIds[]") List<Long> ids, @PathVariable Long projectId,
 			Model model, @RequestParam(required = false) boolean move) {
 		Project project = projectService.read(projectId);
@@ -363,9 +314,7 @@ public class ProjectSamplesController {
 			// See if the name is there
 			for (Join<Project, Sample> join : psj) {
 				Sample sample = join.getObject();
-				if (sampleNames.contains(sample.getLabel())) {
-					sampleNames.remove(sample.getLabel());
-				}
+				sampleNames.remove(sample.getLabel());
 				if (sampleNames.size() == 0) {
 					break;
 				}
@@ -894,6 +843,7 @@ public class ProjectSamplesController {
 	/**
 	 * Valid the name for a new {@link Sample} label.  This checks against existing sample names within the current
 	 * project to ensure that it is not a duplicate.
+	 * TODO: Remove this after removing merge-modal code.
 	 *
 	 * @param projectId  Identifier for the current project
 	 * @param sampleName {@link String} name to validate.

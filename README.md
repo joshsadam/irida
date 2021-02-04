@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/phac-nml/irida.svg?branch=development)](https://travis-ci.org/phac-nml/irida)
+[![Integration Tests](https://github.com/phac-nml/irida/workflows/Integration%20Tests/badge.svg?branch=development&event=schedule)](https://github.com/phac-nml/irida/actions?query=branch%3Adevelopment)
 [![GitHub release](https://img.shields.io/github/release/phac-nml/irida.svg)](https://github.com/phac-nml/irida/releases/latest)
 [![Gitter](https://img.shields.io/gitter/room/phac-nml/irida.svg)](https://gitter.im/irida-project/Lobby)
 
@@ -12,8 +12,8 @@ Important Links
 
 * Main Site: <http://www.irida.ca/>
 * Documentation
-    * Main: <https://irida.corefacility.ca/documentation/>
-    * Download: <https://irida.corefacility.ca/documentation/downloads/index.html>
+    * Main: <https://phac-nml.github.io/irida-documentation/>
+    * Download: <https://phac-nml.github.io/irida-documentation/downloads/index.html>
 * Available Pipeline Plugins: <https://github.com/phac-nml/irida-pipeline-plugins>
 
 

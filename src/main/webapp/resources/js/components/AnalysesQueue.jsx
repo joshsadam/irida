@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Alert, Tooltip } from "antd";
+import { Alert, notification, Tooltip } from "antd";
 import { fetchAnalysesQueueCounts } from "./../apis/analysis/analysis";
 import { SPACE_XS } from "../styles/spacing";
 import styled from "styled-components";
 import { formatNumber } from "../utilities/number-utilities";
 import { blue4, blue6 } from "../styles/colors";
 import { IconCloudServer } from "./icons/Icons";
+import { useInterval } from "../hooks";
 
 const Label = styled.span`
   font-weight: bold;
@@ -15,7 +16,11 @@ const Value = styled.span`
   width: 50px;
   text-align: right;
   font-family: monospace;
+  border-bottom: none;
+  background-color: transparent;
 `;
+
+const UPDATE_QUEUE_COUNT_DELAY = 60000;
 
 /**
  * React component for rendering the current server status
@@ -24,28 +29,44 @@ const Value = styled.span`
  * @constructor
  */
 export function AnalysesQueue({}) {
-  const [running, setRunning] = useState(0);
-  const [queued, setQueued] = useState(0);
+  const [running, setRunning] = useState(null);
+  const [queued, setQueued] = useState(null);
 
   useEffect(() => {
-    fetchAnalysesQueueCounts().then(data => {
+    fetchAnalysesQueueCounts().then((data) => {
       setRunning(data.running);
       setQueued(data.queued);
     });
-  }, [fetchAnalysesQueueCounts]);
+  }, []);
+
+  // Update the analysis duration using polling
+  const intervalId = useInterval(() => {
+    fetchAnalysesQueueCounts()
+      .then((data) => {
+        if (data.running !== running) {
+          setRunning(data.running);
+        }
+        if (data.queued !== queued) {
+          setQueued(data.queued);
+        }
+      })
+      .catch((message) => {
+        notification.error({ message });
+        clearInterval(intervalId);
+      });
+  }, UPDATE_QUEUE_COUNT_DELAY);
 
   return (
     <Tooltip title={i18n("AnalysesQueue.title")} placement={"left"}>
       <Alert
         style={{ padding: 0 }}
-        type="info"
         message={
           <div
             style={{
               width: 160,
               display: "flex",
               alignContent: "center",
-              color: blue6
+              color: blue6,
             }}
           >
             <IconCloudServer
@@ -55,14 +76,13 @@ export function AnalysesQueue({}) {
               style={{
                 display: "inline-block",
                 width: 130,
-                marginRight: SPACE_XS
+                marginRight: SPACE_XS,
               }}
             >
               <div
                 style={{
-                  borderBottom: `1px solid ${blue4}`,
                   display: "flex",
-                  justifyContent: "space-between"
+                  justifyContent: "space-between",
                 }}
               >
                 <Label>{i18n("AnalysesQueue.running")}</Label>
@@ -73,7 +93,7 @@ export function AnalysesQueue({}) {
               <div
                 style={{
                   display: "flex",
-                  justifyContent: "space-between"
+                  justifyContent: "space-between",
                 }}
               >
                 <Label>{i18n("AnalysesQueue.queued")}</Label>

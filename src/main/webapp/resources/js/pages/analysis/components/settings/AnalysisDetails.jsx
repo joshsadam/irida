@@ -7,18 +7,19 @@
  * all the elements required by the component
  */
 import React, { useContext } from "react";
-import { Checkbox, Select, Typography } from "antd";
+import { Select, Typography } from "antd";
 import { AnalysisDetailsContext } from "../../../../contexts/AnalysisDetailsContext";
 
-import { AnalysisContext, isAdmin } from "../../../../contexts/AnalysisContext";
+import { AnalysisContext } from "../../../../contexts/AnalysisContext";
 import { SPACE_MD } from "../../../../styles/spacing";
 import { BasicList } from "../../../../components/lists/BasicList";
 import { TabPaneContent } from "../../../../components/tabs/TabPaneContent";
 
 import {
   formatDate,
-  getHumanizedDuration
+  getHumanizedDuration,
 } from "../../../../utilities/date-utilities";
+import { SimpleRadioButtonGroup } from "../../../../components/Buttons/SimpleRadioButtonGroup";
 
 const { Title, Paragraph } = Typography;
 
@@ -32,12 +33,14 @@ export default function AnalysisDetails() {
   const {
     analysisDetailsContext,
     analysisDetailsContextUpdateSubmissionPriority,
-    analysisDetailsContextUpdateEmailPipelineResult
+    analysisDetailsContextUpdateEmailPipelineResult,
   } = useContext(AnalysisDetailsContext);
 
-  const { analysisContext, analysisContextUpdateSubmissionName } = useContext(
-    AnalysisContext
-  );
+  const {
+    analysisContext,
+    analysisContextUpdateSubmissionName,
+    analysisIdentifier,
+  } = useContext(AnalysisContext);
 
   // List of analysis details
   const analysisDetails = [
@@ -47,18 +50,18 @@ export default function AnalysisDetails() {
         <Paragraph editable={{ onChange: updateSubmissionName }}>
           {analysisContext.analysisName}
         </Paragraph>
-      )
+      ),
     },
     {
       title: i18n("AnalysisDetails.description"),
       desc:
         analysisDetailsContext.analysisDescription !== ""
           ? analysisDetailsContext.analysisDescription
-          : i18n("AnalysisDetails.notApplicable")
+          : i18n("AnalysisDetails.notApplicable"),
     },
     {
       title: i18n("AnalysisDetails.id"),
-      desc: analysisContext.analysis.identifier
+      desc: analysisIdentifier,
     },
     {
       title: i18n("AnalysisDetails.pipeline"),
@@ -66,31 +69,29 @@ export default function AnalysisDetails() {
         analysisDetailsContext.version === "unknown"
           ? i18n("AnalysisDetails.unknownVersion")
           : analysisDetailsContext.version
-      })`
+      })`,
     },
     {
       title: i18n("AnalysisDetails.priority"),
       desc:
-        isAdmin && analysisContext.analysisState === "NEW"
+        analysisContext.isAdmin && analysisContext.analysisState === "NEW"
           ? renderUpdatePrioritySection()
-          : analysisDetailsContext.priority
+          : analysisDetailsContext.priority,
     },
     {
       title: i18n("AnalysisDetails.created"),
-      desc: formatDate({ date: analysisDetailsContext.createdDate })
+      desc: formatDate({ date: analysisDetailsContext.createdDate }),
     },
     {
       title: i18n("AnalysisDetails.duration"),
-      desc: getHumanizedDuration({ date: analysisDetailsContext.duration })
-    }
+      desc: getHumanizedDuration({ date: analysisDetailsContext.duration }),
+    },
   ];
 
-  /*
-        On change of checkbox to receive/not receive an email upon
-        pipeline completion update emailPipelineResult field
-    */
-  function updateEmailPipelineResult(e) {
-    analysisDetailsContextUpdateEmailPipelineResult(e.target.checked);
+  function updateEmailPipelineStatus(updatedEmailPref) {
+    analysisDetailsContextUpdateEmailPipelineResult({
+      emailPreference: updatedEmailPref,
+    });
   }
 
   // Update analysis name
@@ -136,26 +137,55 @@ export default function AnalysisDetails() {
     );
   }
 
+  function renderUpdateEmailPreferenceSection() {
+    return (
+      <section className="t-email-pipeline-result-select">
+        <Select
+          defaultValue={
+            analysisDetailsContext.emailPipelineResultCompleted &&
+            analysisDetailsContext.emailPipelineResultError
+              ? "completed"
+              : !analysisDetailsContext.emailPipelineResultCompleted &&
+                analysisDetailsContext.emailPipelineResultError
+              ? "error"
+              : "none"
+          }
+          style={{ width: "100%" }}
+          onChange={updateEmailPipelineStatus}
+        >
+          <Select.Option key="noemail" value="none">
+            {i18n("AnalysisDetailsEmailPref.noEmail")}
+          </Select.Option>
+          <Select.Option key="emailonerror" value="error">
+            {i18n("AnalysisDetailsEmailPref.errorEmail")}
+          </Select.Option>
+          <Select.Option key="emailoncompletion" value="completed">
+            {i18n("AnalysisDetailsEmailPref.completionEmail")}
+          </Select.Option>
+        </Select>
+      </section>
+    );
+  }
+
   // The following renders the Analysis Details component view
   return (
     <TabPaneContent title={i18n("AnalysisDetails.details")}>
       <BasicList dataSource={analysisDetails} />
 
-      {window.PAGE.mailConfigured &&
+      {analysisContext.mailConfigured &&
       !analysisContext.isCompleted &&
       !analysisContext.isError ? (
-        <section
-          style={{ marginTop: SPACE_MD }}
-          className="t-email-pipeline-result"
-        >
-          <Title level={4}>{i18n("AnalysisDetails.receiveEmail")}</Title>
-          <Checkbox
-            onChange={updateEmailPipelineResult}
-            checked={analysisDetailsContext.emailPipelineResult}
+        <div>
+          <section
+            style={{ marginTop: SPACE_MD }}
+            className="t-email-pipeline-result-completed"
           >
-            {i18n("AnalysisDetails.receiveEmailCheckboxLabel")}
-          </Checkbox>
-        </section>
+            <Title level={4}>
+              {i18n("AnalysisDetails.receiveStatusEmail")}
+            </Title>
+            {renderUpdateEmailPreferenceSection()}
+          </section>
+        </div>
       ) : null}
     </TabPaneContent>
   );

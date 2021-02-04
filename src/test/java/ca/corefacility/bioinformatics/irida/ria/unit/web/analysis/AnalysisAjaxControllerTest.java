@@ -35,10 +35,7 @@ import ca.corefacility.bioinformatics.irida.ria.web.analysis.auditing.AnalysisAu
 import ca.corefacility.bioinformatics.irida.ria.web.components.AnalysisOutputFileDownloadManager;
 import ca.corefacility.bioinformatics.irida.ria.web.services.AnalysesListingService;
 import ca.corefacility.bioinformatics.irida.security.permissions.analysis.UpdateAnalysisSubmissionPermission;
-import ca.corefacility.bioinformatics.irida.service.AnalysisSubmissionService;
-import ca.corefacility.bioinformatics.irida.service.EmailController;
-import ca.corefacility.bioinformatics.irida.service.ProjectService;
-import ca.corefacility.bioinformatics.irida.service.SequencingObjectService;
+import ca.corefacility.bioinformatics.irida.service.*;
 import ca.corefacility.bioinformatics.irida.service.sample.MetadataTemplateService;
 import ca.corefacility.bioinformatics.irida.service.sample.SampleService;
 import ca.corefacility.bioinformatics.irida.service.user.UserService;
@@ -71,9 +68,11 @@ public class AnalysisAjaxControllerTest {
 	private AnalysisSubmissionSampleProcessor analysisSubmissionSampleProcessor;
 	private AnalysisOutputFileDownloadManager analysisOutputFileDownloadManager;
 	private ExecutionManagerConfig configFileMock;
-	private EmailController emailControllerMock;
 	private AnalysisAudit analysisAuditMock;
 	private HttpServletResponse httpServletResponseMock;
+	private AnalysisTypesService analysisTypesServiceMock;
+	private EmailController emailControllerMock;
+
 	/**
 	 * Analysis Output File key names from {@link TestDataFactory#constructAnalysis()}
 	 */
@@ -95,11 +94,13 @@ public class AnalysisAjaxControllerTest {
 		MessageSource messageSourceMock = mock(MessageSource.class);
 		analysisAuditMock = mock(AnalysisAudit.class);
 		httpServletResponseMock = mock(HttpServletResponse.class);
+		analysisTypesServiceMock = mock(AnalysisTypesService.class);
+		emailControllerMock = mock(EmailController.class);
 
 		analysisAjaxController = new AnalysisAjaxController(analysisSubmissionServiceMock, iridaWorkflowsServiceMock,
 				userServiceMock, sampleService, projectServiceMock, updatePermission, metadataTemplateService,
 				sequencingObjectService, analysisSubmissionSampleProcessor,
-				analysisOutputFileDownloadManager, messageSourceMock, configFileMock, analysisAuditMock);
+				analysisOutputFileDownloadManager, messageSourceMock, configFileMock, analysisAuditMock, analysisTypesServiceMock, emailControllerMock);
 
 	}
 
@@ -260,12 +261,14 @@ public class AnalysisAjaxControllerTest {
 	@Test
 	public void testUpdateAnalysisEmailPipelineResult() throws IridaWorkflowNotFoundException {
 		AnalysisSubmission submission = TestDataFactory.constructAnalysisSubmission();
-		AnalysisEmailPipelineResult res = new AnalysisEmailPipelineResult(submission.getId(), true);
+		AnalysisEmailPipelineResult res = new AnalysisEmailPipelineResult(submission.getId(), true, true);
 		submission.setAnalysisState(AnalysisState.RUNNING);
 		when(analysisSubmissionServiceMock.read(submission.getId())).thenReturn(submission);
-		assertFalse("Email result on pipeline completion", submission.getEmailPipelineResult());
+		assertFalse("Email result on pipeline completion", submission.getEmailPipelineResultCompleted());
+		assertFalse("Email result on pipeline error", submission.getEmailPipelineResultError());
 		analysisAjaxController.ajaxUpdateEmailPipelineResult(res, Locale.getDefault(), httpServletResponseMock);
-		submission.setEmailPipelineResult(res.getEmailPipelineResult());
+		submission.setEmailPipelineResultCompleted(res.getEmailPipelineResultCompleted());
+		submission.setEmailPipelineResultError(res.getEmailPipelineResultError());
 		verify(analysisSubmissionServiceMock, times(1)).update(submission);
 	}
 

@@ -132,14 +132,27 @@ public class ProjectSampleMetadataController {
 				Iterator<Cell> cellIterator = row.cellIterator();
 				while (cellIterator.hasNext()) {
 					Cell cell = cellIterator.next();
+
 					int columnIndex = cell.getColumnIndex();
 					if (columnIndex < headers.size()) {
 						String header = headers.get(columnIndex);
 
 						if (!Strings.isNullOrEmpty(header)) {
 							// Need to ignore empty headers.
-							cell.setCellType(CellType.STRING);
-							rowMap.put(header, cell.getStringCellValue());
+							if(cell.getCellTypeEnum().equals(CellType.NUMERIC)) {
+								/*
+								This is a special handler for number cells.  It was requested that numbers
+								keep their formatting from their excel files.  E.g. 2.222222 with formatting
+								for 2 decimal places will be saved as 2.22.
+								 */
+								DataFormatter formatter = new DataFormatter();
+								String value = formatter.formatCellValue(cell);
+								rowMap.put(header, value);
+							}
+							else {
+								cell.setCellType(CellType.STRING);
+								rowMap.put(header, cell.getStringCellValue());
+							}
 						}
 					}
 				}
@@ -270,6 +283,8 @@ public class ProjectSampleMetadataController {
 
 					Map<MetadataTemplateField, MetadataEntry> newData = new HashMap<>();
 
+					Set<MetadataEntry> metadataEntrySet = new HashSet<>();
+
 					// Need to overwrite duplicate keys
 					for (Entry<String, String> entry : row.entrySet()) {
 						// Make sure we are not saving non-metadata items.
@@ -282,19 +297,14 @@ public class ProjectSampleMetadataController {
 										new MetadataTemplateField(entry.getKey(), "text"));
 							}
 
-							newData.put(key, new MetadataEntry(entry.getValue(), "text"));
+							metadataEntrySet.add(new MetadataEntry(entry.getValue(), "text", key));
 						}
 					}
 
-					sample.mergeMetadata(newData);
-
 					// Save metadata back to the sample
-
-					samplesToUpdate.add(sample);
-
+					sampleService.mergeSampleMetadata(sample,metadataEntrySet);
 				}
 
-				sampleService.updateMultiple(samplesToUpdate);
 			} catch (EntityNotFoundException e) {
 				// This really should not happen, but hey, you never know!
 				errorList.add(messageSource.getMessage("metadata.results.save.sample-not-found",

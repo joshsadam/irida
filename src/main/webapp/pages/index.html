@@ -14,7 +14,7 @@
     };
   </script>
 </head>
-<body>
+<body ng-app="irida.dashboard">
 <div class="row" style="margin-top: 1em;" layout:fragment="page">
   <div class="col-md-6 col-lg-5 col-lg-offset-1 col-sm-12">
     <section class="panel panel-primary">
@@ -45,12 +45,15 @@
         </div>
       </div>
       <div class="panel-body">
-        <div class="form-group">
-          <announcements data:url="@{announcements/user/unread}"></announcements>
+        <div id="dashboard-root">
+          <!-- Contents rendered from dashboard.js -->
         </div>
       </div>
     </section>
   </div>
+
+
+
 </div>
 
 <th:block layout:fragment="scripts">
